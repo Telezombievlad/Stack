@@ -1,8 +1,10 @@
 #include <cstdlib>
 #include <cstdio>
 
+#include "stack/Stack.hpp"
+
 int main() {
-	puts("Hi");
+
 
 	return EXIT_SUCCESS;
 }
