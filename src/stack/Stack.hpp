@@ -1,9 +1,10 @@
 #ifndef HEADER_GUARD_STACK_STACK_HPP_INCLUDED
 #define HEADER_GUARD_STACK_STACK_HPP_INCLUDED
 
+#include 
+
 namespace Stack
 {
-
 	namespace _detail
 	{
 		template <class T>
@@ -19,7 +20,7 @@ namespace Stack
 
 				// Ctors && dtor:
 
-					Node() = default;
+					Node(Node<T>* nextNode, T&& element);
 
 					Node(Node<T>&& element);
 
@@ -71,7 +72,6 @@ namespace Stack
 
 				_detail::Node<T>* stackHead_;
 	};
-
 }
 
 #endif /*HEADER_GUARD_STACK_STACK_HPP_INCLUDED*/
