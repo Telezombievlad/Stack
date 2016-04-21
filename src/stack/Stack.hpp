@@ -1,6 +1,8 @@
 #ifndef HEADER_GUARD_STACK_STACK_HPP_INCLUDED
 #define HEADER_GUARD_STACK_STACK_HPP_INCLUDED
 
+#include <utility>
+
 namespace Stack
 {
 	namespace _detail
@@ -9,21 +11,70 @@ namespace Stack
 		struct Node
 		{
 			public:
-				// Variables:
-					Node<T>* nextNode_;
-					T element_;
-				// Ctors && dtor:
-					Node(Node<T>* nextNode, T&& element);
-					Node(Node<T>&  element);
-					Node(Node<T>&& element);
-					Node(T&  element);
-					Node(T&& element);
-					~Node();
-				// Assignment:
-					Node& operator=(const Node<T>&  node);
-					Node& operator=(const Node<T>&& node);
-					Node& operator=(const T&  element);
-					Node& operator=(const T&& element);
+				Node<T>* nextNode;
+				T element;
+
+				//
+				// Basics
+					Node(Node<T>* next, T&& data) :
+						nextNode(next),
+						element(data)
+					{}
+
+					Node(const Node<T>& that) :
+						nextNode(new Node<T>(*that.nextNode)),
+						element(that.element)
+					{}
+
+					Node(Node<T>&& that) :
+						nextNode(that.nextNode),
+						element(std::move(that.element)) // Instead of the copy constructor invoke the move constructor
+					{
+						that.releaseResources();
+					}
+
+					Node(T&& data) :
+						nextNode(nullptr),
+						element(data)
+					{}
+
+					~Node()
+					{
+						if (nextNode != nullptr)
+							delete nextNode;
+					}
+
+				//
+				// operator=
+					Node& operator=(const Node<T>& that)
+					{
+						nextNode = new Node<T>(*that.nextNode);
+						element = that.element;
+
+						return *this;
+					}
+
+					Node& operator=(Node<T>&& that)
+					{
+						nextNode = that.nextNode;
+						element = std::move(that.element);
+						that.releaseResources();
+
+						return *this;
+					}
+
+					Node& operator=(T&& data)
+					{
+						element = data;
+
+						return *this;
+					}
+
+			private:
+				void releaseResources()
+				{
+					nextNode = nullptr;
+				}
 		};
 	}
 
@@ -36,7 +87,7 @@ namespace Stack
 					stackHead_ (nullptr)
 				{}
 
-				Stack(const Stack<T>& stack)
+				Stack(const Stack<T>& stack);
 				Stack(const Stack<T>&& stack);
 				~Stack();
 			// Assignment:
@@ -44,7 +95,7 @@ namespace Stack
 				Stack& operator=(const Stack<T>&& stack);
 			// Functions:
 				bool empty() const;
-				Stack& push(T&& element); 
+				Stack& push(T&& element);
 				T&& pop();
 				const T& head() const;
 				T& head();
