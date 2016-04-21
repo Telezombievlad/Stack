@@ -1,77 +1,77 @@
 #ifndef HEADER_GUARD_STACK_STACK_HPP_INCLUDED
 #define HEADER_GUARD_STACK_STACK_HPP_INCLUDED
 
-template <class TypeA>
-class Node
+namespace Stack
 {
-	friend class Stack<TypeA>;
 
-	private:
+	namespace _detail
+	{
+		template <class T>
+		struct Node
+		{
+			public:
 
-		// Variables:
+				// Variables:
 
-			std::unique_ptr<Node<TypeA>> nextNode_;
+					Node<T>* nextNode_;
 
-			TypeA element_;
+					T element_;
 
-		// Ctors && dtor:
+				// Ctors && dtor:
 
-			// Creates a node
-			Node(TypeA&& element);
+					Node() = default;
 
-			// Move constructor
-			Node(Node&& element);
+					Node(Node<T>&& element);
 
-			// Dtor
-			~Node();
+					Node(T&& element);
 
-		// Assignment:
+					~Node();
 
-			// Move assignment operator
-			Node& operator=(const Node<TypeA>&& node);
-};
+				// Assignment:
 
-template <class TypeA>
-class Stack
-{
-	public:
+					Node& operator=(const Node<T>&& node);
 
-		// Ctors && dtor:
+					Node& operator=(const T&& element);
+		};
+	}
 
-			// Creates an empty stack
-			Stack();
+	template <class T>
+	class Stack
+	{
+		public:
 
-			// Copy constructor
-			Stack(const Stack<TypeA>& stack);
+			// Ctors && dtor:
 
-			// Destructor
-			~Stack();
+				Stack();
 
-		// Assignment:
+				Stack(const Stack<T>&  stack);
+				Stack(const Stack<T>&& stack);
 
-			// Assignment operator
-			Stack& operator=(const Stack<TypeA>& stack);
+				~Stack();
 
-		// Functions:
+			// Assignment:
 
-			// Checks, whether the stack is empty
-			bool empty() const;
+				Stack& operator=(const Stack<T>&  stack);
+				Stack& operator=(const Stack<T>&& stack);
 
-			// Inserts an element to stack head
-			Stack& push(TypeA&& element); 
+			// Functions:
 
-			// Provides access to the head of the stack
-			const TypeA& head();
+				bool empty() const;
 
-			// Returns head of the stack and deletes it from the stack
-			TypeA&& pop();
+				Stack& push(T&& element); 
+				
+				T&& pop();
 
-	private:
+				const T& head() const;
+				T& head();
 
-		// Variables:
+		private:
 
-			std::unique_ptr<Node<TypeA>> stackHead_;
-};
+			// Variables:
+
+				_detail::Node<T>* stackHead_;
+	};
+
+}
 
 #endif /*HEADER_GUARD_STACK_STACK_HPP_INCLUDED*/
-
