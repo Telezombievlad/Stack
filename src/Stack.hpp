@@ -1,3 +1,6 @@
+#ifndef STACK_HPP_INCLUDED
+#define STACK_HPP_INCLUDED
+
 template <class TypeA>
 class Node
 {
@@ -68,4 +71,7 @@ class Stack
 		// Variables:
 
 			std::unique_ptr<Node<TypeA>> stackHead_;
-}
+};
+
+#endif /*STACK_HPP_INCLUDED*/
+
