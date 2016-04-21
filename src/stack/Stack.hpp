@@ -2,6 +2,7 @@
 #define HEADER_GUARD_STACK_STACK_HPP_INCLUDED
 
 #include <utility>
+#include <exception>
 
 namespace Stack
 {
@@ -45,7 +46,7 @@ namespace Stack
 					}
 
 				//
-				// operator=
+				// Operator=
 					Node& operator=(const Node<T>& that)
 					{
 						nextNode = new Node<T>(*that.nextNode);
@@ -82,23 +83,151 @@ namespace Stack
 	class Stack
 	{
 		public:
-			// Ctors && dtor:
+			//
+			// Basics
 				Stack() :
 					stackHead_ (nullptr)
 				{}
 
-				Stack(const Stack<T>& stack);
-				Stack(const Stack<T>&& stack);
-				~Stack();
-			// Assignment:
-				Stack& operator=(const Stack<T>& stack);
-				Stack& operator=(const Stack<T>&& stack);
-			// Functions:
-				bool empty() const;
-				Stack& push(T&& element);
-				T&& pop();
-				const T& head() const;
-				T& head();
+				Stack(const Stack<T>& stack) :
+					stackHead_ (nullptr)
+				{
+					if (&stack == this) return;
+					if (stack.empty())  return;
+
+					stackHead_ = new _detail::Node<T>(*stack.stackHead_);
+
+					for (_detail::Node<T>* thatPtr = stack.stackHead_->nextNode,
+										    ourPtr = stackHead_; 
+						thatPtr != nullptr; 
+						thatPtr = thatPtr->nextNode,
+						 ourPtr =  ourPtr->nextNode)
+					{
+						ourPtr->nextNode = new _detail::Node<T>(*thatPtr); 
+					}
+				}
+
+				Stack(const Stack<T>&& stack) : 
+					stackHead_ (nullptr)
+				{
+					if (stack.empty()) return;
+
+					std::swap(stackHead_, stack.stackHead_);
+				}
+
+				~Stack()
+				{
+					if (!empty()) delete stackHead_;
+				}
+
+			//
+			// Operator =
+				Stack& operator=(const Stack<T>& stack)
+				{
+					if (&stack == this) return *this;
+					if (stack.empty())  return *this;
+
+					stackHead_ = new _detail::Node<T>(*stack.stackHead_);
+
+					for (_detail::Node<T>* thatPtr = stack.stackHead_->nextNode,
+										    ourPtr = stackHead_; 
+						thatPtr != nullptr; 
+						thatPtr = thatPtr->nextNode,
+						 ourPtr =  ourPtr->nextNode)
+					{
+						ourPtr->nextNode = new _detail::Node<T>(*thatPtr); 
+					}
+
+					return *this;
+				}
+
+				Stack& operator=(const Stack<T>&& stack)
+				{
+					if (stack.empty()) return;
+
+					if (!empty()) delete stackHead_;
+
+					stackHead_ = nullptr;
+					std::swap(stackHead_, stack.stackHead_);
+
+					return *this;
+				}
+
+			//
+			// Getters && setters
+
+				const T& head() const
+				{
+					if (empty())
+					{
+						throw std::out_of_range("const T& Stack::head(): Stack is empty");
+					}
+
+					return stackHead_->element;
+				}
+
+				Stack& setHead(const T& newHead)
+				{
+					if (empty())
+					{
+						throw std::out_of_range("T& Stack::head(): Stack is empty");
+					}
+
+					stackHead_->element = newHead;
+
+					return *this;
+				}
+
+				Stack& setHead(T&& newHead)
+				{
+					if (empty())
+					{
+						throw std::out_of_range("T& Stack::head(): Stack is empty");
+					}
+
+					stackHead_->element = std::move(newHead);
+
+					return *this;
+				}
+
+			//
+			// Other functions
+				bool empty() const
+				{
+					return stackHead_ == nullptr;
+				}
+
+				Stack& push(const T& element)
+				{
+					stackHead_ = new _detail::Node<T>(stackHead_, element);
+
+					return *this;
+				}
+
+				Stack& push(T&& element)
+				{
+					stackHead_ = new _detail::Node<T>(stackHead_, std::move(element));
+
+					return *this;
+				}
+
+				T&& pop()
+				{
+					if (empty())
+					{
+						throw std::out_of_range("T&& Stack::pop(): Stack is empty");
+					}
+
+					T&& toReturn = std::move(stackHead_->element);
+
+					_detail::Node<T>* toDelete = stackHead_;
+					stackHead_ = stackHead_->nextNode;
+
+					delete toDelete;
+
+					return std::move(toReturn);
+				}
+
 		private:
 			// Variables:
 				_detail::Node<T>* stackHead_;
