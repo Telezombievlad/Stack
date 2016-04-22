@@ -3,6 +3,8 @@
 
 #include <utility>
 #include <exception>
+#include <string>
+#include <sstream>
 
 namespace Stack
 {
@@ -12,14 +14,19 @@ namespace Stack
 		struct Node
 		{
 			public:
-				Node<T>* nextNode;
-				T element;
+				// Variables:
+					Node<T>* nextNode;
+					T element;
 
-				//
-				// Basics
-					Node(Node<T>* next, T&& data) :
+				// Ctors && dtor:
+					Node(Node<T>* next, const T& data) :
 						nextNode(next),
 						element(data)
+					{}	
+
+					Node(Node<T>* next, T&& data) :
+						nextNode(next),
+						element(std::move(data))
 					{}
 
 					Node(const Node<T>& that) :
@@ -45,10 +52,13 @@ namespace Stack
 							delete nextNode;
 					}
 
-				//
-				// Operator=
+				// Operator=:
 					Node& operator=(const Node<T>& that)
 					{
+						if (this == &that) return *this;
+
+						if (nextNode != nullptr) delete nextNode;
+
 						nextNode = new Node<T>(*that.nextNode);
 						element = that.element;
 
@@ -57,6 +67,8 @@ namespace Stack
 
 					Node& operator=(Node<T>&& that)
 					{
+						if (this == &that) return *this;
+
 						nextNode = that.nextNode;
 						element = std::move(that.element);
 						that.releaseResources();
@@ -71,11 +83,11 @@ namespace Stack
 						return *this;
 					}
 
-			private:
-				void releaseResources()
-				{
-					nextNode = nullptr;
-				}
+				// Additional:
+					void releaseResources()
+					{
+						nextNode = nullptr;
+					}
 		};
 	}
 
@@ -83,82 +95,59 @@ namespace Stack
 	class Stack
 	{
 		public:
-			//
-			// Basics
+			// Ctors && dtor: 
 				Stack() :
 					stackHead_ (nullptr)
 				{}
 
-				Stack(const Stack<T>& stack) :
+				Stack(const Stack<T>& that) :
 					stackHead_ (nullptr)
 				{
-					if (&stack == this) return;
-					if (stack.empty())  return;
+					if (that.stackHead_ == nullptr) return;
 
-					stackHead_ = new _detail::Node<T>(*stack.stackHead_);
-
-					for (_detail::Node<T>* thatPtr = stack.stackHead_->nextNode,
-										    ourPtr = stackHead_; 
-						thatPtr != nullptr; 
-						thatPtr = thatPtr->nextNode,
-						 ourPtr =  ourPtr->nextNode)
-					{
-						ourPtr->nextNode = new _detail::Node<T>(*thatPtr); 
-					}
+					stackHead_ = new _detail::Node<T>(*that.stackHead_);
 				}
 
-				Stack(const Stack<T>&& stack) : 
-					stackHead_ (nullptr)
+				Stack(const Stack<T>&& that) : 
+					stackHead_ (that.stackHead_)
 				{
-					if (stack.empty()) return;
-
-					std::swap(stackHead_, stack.stackHead_);
+					that.releaseResources();
 				}
 
 				~Stack()
 				{
-					if (!empty()) delete stackHead_;
+					if (stackHead_ != nullptr) delete stackHead_;
 				}
 
-			//
-			// Operator =
-				Stack& operator=(const Stack<T>& stack)
+			// Operator =:
+				Stack& operator=(const Stack<T>& that)
 				{
-					if (&stack == this) return *this;
-					if (stack.empty())  return *this;
+					if (&that == this) return *this;
+					if (that.stackHead_ == nullptr) return *this;
 
-					stackHead_ = new _detail::Node<T>(*stack.stackHead_);
+					if (stackHead_ != nullptr) delete stackHead_; 
 
-					for (_detail::Node<T>* thatPtr = stack.stackHead_->nextNode,
-										    ourPtr = stackHead_; 
-						thatPtr != nullptr; 
-						thatPtr = thatPtr->nextNode,
-						 ourPtr =  ourPtr->nextNode)
-					{
-						ourPtr->nextNode = new _detail::Node<T>(*thatPtr); 
-					}
+					stackHead_ = new _detail::Node<T>(*that.stackHead_);
 
 					return *this;
 				}
 
-				Stack& operator=(const Stack<T>&& stack)
+				Stack& operator=(Stack<T>&& that)
 				{
-					if (stack.empty()) return;
+					if (that.stackHead_ == nullptr) return;
 
-					if (!empty()) delete stackHead_;
-
-					stackHead_ = nullptr;
-					std::swap(stackHead_, stack.stackHead_);
+					if (stackHead_ != nullptr) delete stackHead_;
+					
+					stackHead_ = that.stackHead_;
+					that.releaseResources();
 
 					return *this;
 				}
 
-			//
-			// Getters && setters
-
+			// Getters && setters:
 				const T& head() const
 				{
-					if (empty())
+					if (stackHead_ == nullptr)
 					{
 						throw std::out_of_range("const T& Stack::head(): Stack is empty");
 					}
@@ -168,7 +157,7 @@ namespace Stack
 
 				Stack& setHead(const T& newHead)
 				{
-					if (empty())
+					if (stackHead_ == nullptr)
 					{
 						throw std::out_of_range("T& Stack::head(): Stack is empty");
 					}
@@ -180,7 +169,7 @@ namespace Stack
 
 				Stack& setHead(T&& newHead)
 				{
-					if (empty())
+					if (stackHead_ == nullptr)
 					{
 						throw std::out_of_range("T& Stack::head(): Stack is empty");
 					}
@@ -190,13 +179,12 @@ namespace Stack
 					return *this;
 				}
 
-			//
-			// Other functions
 				bool empty() const
 				{
 					return stackHead_ == nullptr;
 				}
 
+			// Push/pop:
 				Stack& push(const T& element)
 				{
 					stackHead_ = new _detail::Node<T>(stackHead_, element);
@@ -206,32 +194,57 @@ namespace Stack
 
 				Stack& push(T&& element)
 				{
-					stackHead_ = new _detail::Node<T>(stackHead_, std::move(element));
+					stackHead_ = new _detail::Node<T>(stackHead_, element);
 
 					return *this;
 				}
 
 				T&& pop()
 				{
-					if (empty())
+					if (stackHead_ == nullptr)
 					{
 						throw std::out_of_range("T&& Stack::pop(): Stack is empty");
 					}
 
-					T&& toReturn = std::move(stackHead_->element);
+					T toReturn = std::move(stackHead_->element);
 
 					_detail::Node<T>* toDelete = stackHead_;
+
 					stackHead_ = stackHead_->nextNode;
 
+					toDelete->releaseResources();
 					delete toDelete;
 
 					return std::move(toReturn);
 				}
 
+			// Debugging:
+				std::string&& dump() const;
+
 		private:
 			// Variables:
 				_detail::Node<T>* stackHead_;
+
+			// Functions:
+				void releaseResources()
+				{
+					stackHead_ = nullptr;
+				}
 	};
+
+	template <>
+	std::string&& Stack<int>::dump() const
+	{
+		std::string toReturn = std::string("std::string&& Stack::dump():\n");
+
+		size_t i = 0;
+		for (_detail::Node<int>* node = stackHead_; node != nullptr; node = node->nextNode, ++i)
+		{
+			toReturn += std::string("[") + std::to_string(i) + std::string("] = ") + std::to_string(node->element) + std::string("\n");
+		}
+
+		return std::move(toReturn);
+	} 
 }
 
 #endif /*HEADER_GUARD_STACK_STACK_HPP_INCLUDED*/
