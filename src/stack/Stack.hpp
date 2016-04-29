@@ -3,10 +3,12 @@
 
 #include <utility>
 #include <exception>
-#include <string>
-#include <sstream>
+#include <initializer_list>
+#include <iterator>
 
-namespace Stack
+#include <string>
+
+namespace MyStack
 {
 	namespace _detail
 	{
@@ -114,6 +116,15 @@ namespace Stack
 					that.releaseResources();
 				}
 
+				Stack(std::initializer_list<T> initList) :
+					stackHead_ (nullptr)
+				{
+					for (auto i = initList.begin(); i != initList.end(); ++i)
+					{
+						push(*i);
+					}
+				}
+
 				~Stack()
 				{
 					if (stackHead_ != nullptr) delete stackHead_;
@@ -143,6 +154,21 @@ namespace Stack
 
 					return *this;
 				}
+
+				// Breaks uninitialized stack
+				/* 
+				Stack& operator=(std::initializer_list<T> initList)
+				{
+					if (stackHead_ != nullptr) delete stackHead_;
+
+					for (auto i = initList.begin(); i != initList.end(); ++i)
+					{
+						push(*i);
+					}
+
+					return *this;
+				}
+				*/
 
 			// Getters && setters:
 				const T& head() const
@@ -218,9 +244,6 @@ namespace Stack
 					return std::move(toReturn);
 				}
 
-			// Debugging:
-				std::string&& dump() const;
-
 		private:
 			// Variables:
 				_detail::Node<T>* stackHead_;
@@ -230,21 +253,7 @@ namespace Stack
 				{
 					stackHead_ = nullptr;
 				}
-	};
-
-	template <>
-	std::string&& Stack<int>::dump() const
-	{
-		std::string toReturn = std::string("std::string&& Stack::dump():\n");
-
-		size_t i = 0;
-		for (_detail::Node<int>* node = stackHead_; node != nullptr; node = node->nextNode, ++i)
-		{
-			toReturn += std::string("[") + std::to_string(i) + std::string("] = ") + std::to_string(node->element) + std::string("\n");
-		}
-
-		return std::move(toReturn);
-	} 
+	}; 
 }
 
 #endif /*HEADER_GUARD_STACK_STACK_HPP_INCLUDED*/

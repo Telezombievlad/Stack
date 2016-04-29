@@ -10,7 +10,7 @@ int calculate(const std::string& input, int startVal = 0)
 {
 	if (input.empty()) return 0;
 
-	Stack::Stack<int> values{};
+	MyStack::Stack<int> values{};
 
 	values.push(startVal);
 
@@ -21,7 +21,7 @@ int calculate(const std::string& input, int startVal = 0)
 		{
 			if (prevWasNum && values.head())
 			{
-				throw std::invalid_argument(std::string("Numbers cant start with 0"));
+				throw std::invalid_argument("Numbers cant start with 0");
 			}
 
 			if (prevWasNum && !values.empty())
@@ -42,11 +42,11 @@ int calculate(const std::string& input, int startVal = 0)
 
 		if (i == '+' || i == '-' || i == '*' || i == '/' || i == '%')
 		{
-			if (values.empty()) throw std::invalid_argument(std::string("Parse error")); 
+			if (values.empty()) throw std::invalid_argument("Parse error"); 
 
 			int second = values.pop();
 
-			if (values.empty()) throw std::invalid_argument(std::string("Parse error")); 
+			if (values.empty()) throw std::invalid_argument("Parse error"); 
 
 			int first = values.pop();
 
@@ -72,7 +72,7 @@ int calculate(const std::string& input, int startVal = 0)
 				}
 				case '/':
 				{
-					if (second == 0) throw std::invalid_argument(std::string("Divide by zero")); 
+					if (second == 0) throw std::invalid_argument("Divide by zero"); 
 
 					values.push(first / second);
 
@@ -89,7 +89,7 @@ int calculate(const std::string& input, int startVal = 0)
 		}
 	}
 
-	if (values.empty()) throw std::invalid_argument(std::string("Parse error")); 
+	if (values.empty()) throw std::invalid_argument("Parse error"); 
 
 	return values.pop();
 }
@@ -98,6 +98,7 @@ int main()
 {
 	try
 	{
+		/*
 		std::string input;
 
 		int startVal = 0;
@@ -109,10 +110,31 @@ int main()
 
 			getline(std::cin, input, '\n');
 		}
+		*/
+
+		MyStack::Stack<int> initListStack = {1, 2, 3, 4, 5};
+
+		std::cout << initListStack.pop() << " " << initListStack.head() << std::endl;
+
+		std::cout << initListStack.pop() << std::endl;
+		
+		std::cout << initListStack.head() << std::endl;	
 	}
 	catch (std::invalid_argument ex)
 	{
 		std::cout << ex.what() << std::endl;
+	}
+	catch (std::out_of_range ex)
+	{
+		std::cout << ex.what() << std::endl;
+	}
+	catch (std::exception ex)
+	{
+		std::cout << ex.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cout << "Unexpected exception" << std::endl;
 	}
 
 	std::cin.ignore();
