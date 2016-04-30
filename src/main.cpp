@@ -112,6 +112,7 @@ int main()
 		}
 		*/
 
+		/*
 		MyStack::Stack<int> initListStack = {1, 2, 3, 4, 5};
 
 		std::cout << initListStack.pop() << " " << initListStack.head() << std::endl;
@@ -119,6 +120,15 @@ int main()
 		std::cout << initListStack.pop() << std::endl;
 		
 		std::cout << initListStack.head() << std::endl;	
+		*/
+
+		MyStack::Stack<int> initListStack = {1, 2};
+
+		initListStack = {3, 4, 5};
+
+		std::cout << initListStack.pop() << std::endl;
+		std::cout << initListStack.pop() << std::endl;
+		std::cout << initListStack.pop() << std::endl;
 	}
 	catch (std::invalid_argument ex)
 	{

@@ -32,7 +32,7 @@ namespace MyStack
 					{}
 
 					Node(const Node<T>& that) :
-						nextNode(new Node<T>(*that.nextNode)),
+						nextNode((that.nextNode != nullptr)? new Node<T>(*that.nextNode) : nullptr),
 						element(that.element)
 					{}
 
@@ -42,11 +42,6 @@ namespace MyStack
 					{
 						that.releaseResources();
 					}
-
-					Node(T&& data) :
-						nextNode(nullptr),
-						element(data)
-					{}
 
 					~Node()
 					{
@@ -105,12 +100,11 @@ namespace MyStack
 				Stack(const Stack<T>& that) :
 					stackHead_ (nullptr)
 				{
-					if (that.stackHead_ == nullptr) return;
-
-					stackHead_ = new _detail::Node<T>(*that.stackHead_);
+					if (that.stackHead_ == nullptr) stackHead_ = nullptr;
+					else stackHead_ = new _detail::Node<T>(*that.stackHead_);
 				}
 
-				Stack(const Stack<T>&& that) : 
+				Stack(Stack<T>&& that) : 
 					stackHead_ (that.stackHead_)
 				{
 					that.releaseResources();
@@ -128,24 +122,26 @@ namespace MyStack
 				~Stack()
 				{
 					if (stackHead_ != nullptr) delete stackHead_;
+
+					stackHead_ = nullptr;
 				}
 
 			// Operator =:
 				Stack& operator=(const Stack<T>& that)
 				{
 					if (&that == this) return *this;
-					if (that.stackHead_ == nullptr) return *this;
 
 					if (stackHead_ != nullptr) delete stackHead_; 
-
-					stackHead_ = new _detail::Node<T>(*that.stackHead_);
+					
+					if (that.stackHead_ == nullptr) stackHead_ = nullptr;
+					else stackHead_ = new _detail::Node<T>(*that.stackHead_);
 
 					return *this;
 				}
 
 				Stack& operator=(Stack<T>&& that)
 				{
-					if (that.stackHead_ == nullptr) return;
+					if (&that == this) return *this;
 
 					if (stackHead_ != nullptr) delete stackHead_;
 					
@@ -155,11 +151,10 @@ namespace MyStack
 					return *this;
 				}
 
-				// Breaks uninitialized stack
-				/* 
 				Stack& operator=(std::initializer_list<T> initList)
 				{
 					if (stackHead_ != nullptr) delete stackHead_;
+					stackHead_ = nullptr;
 
 					for (auto i = initList.begin(); i != initList.end(); ++i)
 					{
@@ -168,7 +163,6 @@ namespace MyStack
 
 					return *this;
 				}
-				*/
 
 			// Getters && setters:
 				const T& head() const
@@ -205,7 +199,7 @@ namespace MyStack
 					return *this;
 				}
 
-				bool empty() const
+				bool empty() const noexcept
 				{
 					return stackHead_ == nullptr;
 				}
@@ -249,7 +243,7 @@ namespace MyStack
 				_detail::Node<T>* stackHead_;
 
 			// Functions:
-				void releaseResources()
+				void releaseResources() noexcept
 				{
 					stackHead_ = nullptr;
 				}
