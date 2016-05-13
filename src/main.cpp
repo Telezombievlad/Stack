@@ -2,7 +2,9 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "stack/Stack.hpp"
+#include "headers/Stack.hpp"
+
+namespace MyStack = MyStackStaticArrayRepresentation;
 
 // RPN Stack caclulator
 
@@ -10,7 +12,7 @@ int calculate(const std::string& input, int startVal = 0)
 {
 	if (input.empty()) return 0;
 
-	MyStack::Stack<int> values{};
+	MyStack::Stack<int, 10> values{};
 
 	values.push(startVal);
 
@@ -26,7 +28,7 @@ int calculate(const std::string& input, int startVal = 0)
 
 			if (prevWasNum && !values.empty())
 			{
-				values.setHead(values.head() * 10 + (i - '0'));
+				values.head() = values.head() * 10 + (i - '0');
 			}	
 			else
 			{
@@ -99,44 +101,29 @@ int main()
 	try
 	{
 		/*
-		std::string input;
+		MyStack::Stack<int, 5> test{};
 
+		test.push(2);
+
+		std::cout << test.head() << std::endl;
+
+		test.push(3);
+
+		std::cout << test.pop() << std::endl;
+
+		test.head() = 5;
+
+		std::cout << test.head() << std::endl;
+		*/
+
+		std::string input;
 		int startVal = 0;
 		while (input != std::string("exit"))
 		{
 			startVal = calculate(input, startVal);
-
 			std::cout << startVal << std::endl;
-
 			getline(std::cin, input, '\n');
 		}
-		*/
-
-		/*
-		MyStack::Stack<int> initListStack = {1, 2, 3, 4, 5};
-
-		std::cout << initListStack.pop() << " " << initListStack.head() << std::endl;
-
-		std::cout << initListStack.pop() << std::endl;
-		
-		std::cout << initListStack.head() << std::endl;	
-		*/
-
-		MyStack::Stack<int> initListStack = {1, 2};
-
-		initListStack = {3, 4, 5};
-
-		std::cout << initListStack.pop() << std::endl;
-		std::cout << initListStack.pop() << std::endl;
-		std::cout << initListStack.pop() << std::endl;
-	}
-	catch (std::invalid_argument ex)
-	{
-		std::cout << ex.what() << std::endl;
-	}
-	catch (std::out_of_range ex)
-	{
-		std::cout << ex.what() << std::endl;
 	}
 	catch (std::exception ex)
 	{
